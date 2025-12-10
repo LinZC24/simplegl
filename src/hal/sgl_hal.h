@@ -2,7 +2,7 @@
 #define SGL_HAL_H
 
 #include <stdint.h>
-#include "../conf_template.h"
+#include "../sgl_conf_template.h"
 
 #if SGL_COLOR_DEPTH == 32
     typedef uint32_t sgl_color_t;
