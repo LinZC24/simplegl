@@ -7,13 +7,14 @@
 #include <linux/fb.h>
 #include <sys/ioctl.h>
 #include <string.h>
+#include <stdint.h> // 引入 intptr_t
 
 static int fb_fd = 0;
 static struct fb_var_screeninfo vinfo;
 static struct fb_fix_screeninfo finfo;
 static long int screensize = 0;
-static char *fbp = 0; //显存指针
-static char *back_buffer = 0; //后备缓冲区指针，用于双缓冲模式
+static char *fbp = 0; // 显存指针
+static char *back_buffer = NULL; // 后备缓冲区指针 (字节指针)
 
 int sgl_hal_init(void) {
   // 打开帧缓冲设备
@@ -40,31 +41,33 @@ int sgl_hal_init(void) {
 
   // 映射显存到用户空间
   fbp = (char *)mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fb_fd, 0);
-  if ((int)fbp == -1) {
+  // 修复1: 使用 intptr_t 避免指针转 int 的警告
+  if ((intptr_t)fbp == -1) {
     perror("Error: failed to map framebuffer device to memory");
     return -1;
   }
 
-  // 启用双缓冲的解决
-#if SGL_USE_DOUBLE_BUFFER
+  // 启用双缓冲
+  // 修复2: back_buffer 是 char*，malloc 返回 void*，直接赋值即可，或者转为 char*
   back_buffer = (char *)malloc(screensize);
-  if (!back_buffer) {
-    perror("Error: failed to allocate back buffer");
-    return -1;
-  }
-  memset(back_buffer, 0, screensize);
-#endif
-  printf("Framebuffer initialized: %dx%d, %d bpp\n", vinfo.xres, vinfo.yres, vinfo.bits_per_pixel);
-  return 0;
+    if (!back_buffer) {
+        perror("Error: failed to allocate back buffer");
+        return -1;
+    }
+    // 初始化为全黑
+    memset(back_buffer, 0, screensize);
+
+    printf("HAL Init: %dx%d, %dbpp\n", vinfo.xres, vinfo.yres, vinfo.bits_per_pixel);
+    return 0;
 }
 
 void sgl_hal_deinit(void) {
-#if SGL_USE_DOUBLE_BUFFER
+
   if (back_buffer) {
     free(back_buffer);
-    back_buffer = 0;
+    back_buffer = NULL;
   }
-#endif
+
   if(fbp && (intptr_t)fbp != -1) {
     munmap(fbp, screensize);
     fbp = NULL;
@@ -80,29 +83,25 @@ void sgl_hal_draw_pixel(int x, int y, sgl_color_t color) {
     return; // 越界检查
   }
 
+  // 计算字节偏移量
   long int location = (x + vinfo.xoffset) * (vinfo.bits_per_pixel / 8) +
                       (y + vinfo.yoffset) * finfo.line_length;
-#if SGL_USE_DOUBLE_BUFFER
-  // 在后备缓冲区绘制像素
-  char *target_buffer = back_buffer;
-#else
-  // 直接在显存绘制像素
-  char *target_buffer = fbp;
-#endif  
-
-  *(sgl_color_t *)(target_buffer + location) = color;
   
+  // 修复3: 根据色深正确写入像素数据 (解决只能写1字节的问题)
+  if (vinfo.bits_per_pixel == 32) {
+      *((uint32_t*)(back_buffer + location)) = color;
+  } else if (vinfo.bits_per_pixel == 16) {
+      *((uint16_t*)(back_buffer + location)) = (uint16_t)color;
+  } else {
+      // 8 bit
+      back_buffer[location] = (uint8_t)color;
+  }
 }
 
 void sgl_hal_flush(void) {
-#if SGL_USE_DOUBLE_BUFFER
-  // 将后备缓冲区内容复制到显存
-  if(fbp && back_buffer) {
-    memcpy(fbp, back_buffer, screensize);
-  }
-#else
-  // 非双缓冲模式不需要刷新
-#endif
+    if (fbp && back_buffer) {
+        memcpy(fbp, back_buffer, screensize);
+    }
 }
 
 int sgl_hal_get_width(void) {
