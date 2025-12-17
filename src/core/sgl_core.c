@@ -1,219 +1,91 @@
 #include "sgl_core.h"
+#include "../hal/sgl_hal.h"
 #include <stdlib.h>
-#include <string.h>
+#include <stddef.h>
 
-// 全局上下文实例
-sgl_context_t* current_context = NULL;
+// 全局变量：当前活动的屏幕对象
+static sgl_obj_t *act_scr = NULL;
 
-sgl_context_t* sgl_create_context(int width, int height) {
-    sgl_context_t* ctx = (sgl_context_t*)malloc(sizeof(sgl_context_t));
-    if (!ctx) return NULL;
-
-    ctx->width = width;
-    ctx->height = height;
-
-    // 分配颜色缓冲区 (RGBA)
-    ctx->color_buffer = (sgl_color_t*)malloc(width * height * sizeof(sgl_color_t));
-    // 分配深度缓冲区 (Float)
-    ctx->depth_buffer = (sgl_depth_t*)malloc(width * height * sizeof(sgl_depth_t));
-
-    if (!ctx->color_buffer || !ctx->depth_buffer) {
-        sgl_destroy_context(ctx);
-        return NULL;
+int sgl_init(void) {
+    // 1. 初始化硬件层
+    if (sgl_hal_init() != 0) {
+        return -1;
     }
 
-    // 初始化视口矩阵
-    // 临时切换上下文以复用 sgl_viewport 逻辑
-    sgl_context_t* old_ctx = current_context;
-    current_context = ctx;
-    sgl_viewport(0, 0, width, height);
-    current_context = old_ctx;
-
-    return ctx;
-}
-
-void sgl_destroy_context(sgl_context_t* ctx) {
-    if (!ctx) return;
-
-    if (ctx->color_buffer) free(ctx->color_buffer);
-    if (ctx->depth_buffer) free(ctx->depth_buffer);
-
-    if (current_context == ctx) {
-        current_context = NULL;
+    // 2. 创建根对象 (屏幕)
+    // 屏幕没有父对象
+    act_scr = sgl_obj_create(NULL);
+    if (!act_scr) {
+        sgl_hal_deinit();
+        return -1;
     }
 
-    free(ctx);
+    // 3. 设置屏幕默认属性
+    sgl_obj_set_size(act_scr, sgl_hal_get_width(), sgl_hal_get_height());
+    sgl_obj_set_pos(act_scr, 0, 0);
+    sgl_obj_set_color(act_scr, 0xFF000000); // 默认黑色背景
+
+    return 0;
 }
 
-void sgl_set_current_context(sgl_context_t* ctx) {
-    current_context = ctx;
-}
+// 辅助函数：递归释放对象及其所有子对象
+static void _sgl_obj_del_recursive(sgl_obj_t *obj) {
+    if (!obj) return;
 
-void sgl_clear_color(sgl_color_t color) {
-    if (!current_context || !current_context->color_buffer) return;
-
-    size_t pixel_count = current_context->width * current_context->height;
-    
-    // 简单的循环赋值
-    for (size_t i = 0; i < pixel_count; ++i) {
-        current_context->color_buffer[i] = color;
-    }
-}
-
-void sgl_clear_depth(float depth) {
-    if (!current_context || !current_context->depth_buffer) return;
-
-    size_t pixel_count = current_context->width * current_context->height;
-    
-    for (size_t i = 0; i < pixel_count; ++i) {
-        current_context->depth_buffer[i] = depth;
-    }
-}
-
-void sgl_clear(sgl_color_t color, float depth) {
-    sgl_clear_color(color);
-    sgl_clear_depth(depth);
-}
-
-void sgl_viewport(int x, int y, int width, int height) {
-    if (!current_context) return;
-
-    float w = (float)width / 2.0f;
-    float h = (float)height / 2.0f;
-
-    // 构建视口变换矩阵
-    // 映射 NDC [-1, 1] -> Screen [x, x+w], [y, y+h]
-    // 映射 Z [-1, 1] -> [0, 1]
-    
-    // 假设 mat4x4 结构体有 m[4][4] 成员
-    // 初始化为 0
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            current_context->viewport_matrix.m[i][j] = 0.0f;
-        }
+    // 1. 先递归删除所有子对象
+    sgl_obj_t *child = obj->child;
+    while (child) {
+        sgl_obj_t *next = child->next; // 先保存下一个兄弟，防止释放后找不到
+        _sgl_obj_del_recursive(child);
+        child = next;
     }
 
-    // 对角线缩放
-    current_context->viewport_matrix.m[0][0] = w;
-    current_context->viewport_matrix.m[1][1] = h;
-    current_context->viewport_matrix.m[2][2] = 0.5f;
-    current_context->viewport_matrix.m[3][3] = 1.0f;
-
-    // 平移分量 (第4列)
-    current_context->viewport_matrix.m[0][3] = (float)x + w;
-    current_context->viewport_matrix.m[1][3] = (float)y + h;
-    current_context->viewport_matrix.m[2][3] = 0.5f;
+    // 2. 释放当前对象
+    free(obj);
 }
 
-sgl_color_t* sgl_get// filepath: /home/student/finalProj/simplegl/src/core/sgl_core.c
-#include "sgl_core.h"
-#include <stdlib.h>
-#include <string.h>
-
-// 全局上下文实例
-sgl_context_t* current_context = NULL;
-
-sgl_context_t* sgl_create_context(int width, int height) {
-    sgl_context_t* ctx = (sgl_context_t*)malloc(sizeof(sgl_context_t));
-    if (!ctx) return NULL;
-
-    ctx->width = width;
-    ctx->height = height;
-
-    // 分配颜色缓冲区 (RGBA)
-    ctx->color_buffer = (sgl_color_t*)malloc(width * height * sizeof(sgl_color_t));
-    // 分配深度缓冲区 (Float)
-    ctx->depth_buffer = (sgl_depth_t*)malloc(width * height * sizeof(sgl_depth_t));
-
-    if (!ctx->color_buffer || !ctx->depth_buffer) {
-        sgl_destroy_context(ctx);
-        return NULL;
+void sgl_deinit(void) {
+    // 1. 释放对象树
+    if (act_scr) {
+        _sgl_obj_del_recursive(act_scr);
+        act_scr = NULL;
     }
 
-    // 初始化视口矩阵
-    // 临时切换上下文以复用 sgl_viewport 逻辑
-    sgl_context_t* old_ctx = current_context;
-    current_context = ctx;
-    sgl_viewport(0, 0, width, height);
-    current_context = old_ctx;
-
-    return ctx;
+    // 2. 关闭硬件层
+    sgl_hal_deinit();
 }
 
-void sgl_destroy_context(sgl_context_t* ctx) {
-    if (!ctx) return;
+sgl_obj_t *sgl_get_scr_act(void) {
+    return act_scr;
+}
 
-    if (ctx->color_buffer) free(ctx->color_buffer);
-    if (ctx->depth_buffer) free(ctx->depth_buffer);
+// 辅助函数：递归渲染对象
+static void _sgl_render_obj(sgl_obj_t *obj, int parent_abs_x, int parent_abs_y) {
+    if (!obj) return;
 
-    if (current_context == ctx) {
-        current_context = NULL;
+    // 1. 计算绝对坐标
+    int abs_x = parent_abs_x + obj->x;
+    int abs_y = parent_abs_y + obj->y;
+
+    // 2. 调用对象的绘制回调
+    if (obj->draw_cb) {
+        obj->draw_cb(obj, abs_x, abs_y);
     }
 
-    free(ctx);
-}
-
-void sgl_set_current_context(sgl_context_t* ctx) {
-    current_context = ctx;
-}
-
-void sgl_clear_color(sgl_color_t color) {
-    if (!current_context || !current_context->color_buffer) return;
-
-    size_t pixel_count = current_context->width * current_context->height;
-    
-    // 简单的循环赋值
-    for (size_t i = 0; i < pixel_count; ++i) {
-        current_context->color_buffer[i] = color;
+    // 3. 递归绘制子对象 (子对象覆盖在父对象之上)
+    sgl_obj_t *child = obj->child;
+    while (child) {
+        _sgl_render_obj(child, abs_x, abs_y);
+        child = child->next;
     }
 }
 
-void sgl_clear_depth(float depth) {
-    if (!current_context || !current_context->depth_buffer) return;
+void sgl_refresh(void) {
+    if (!act_scr) return;
 
-    size_t pixel_count = current_context->width * current_context->height;
-    
-    for (size_t i = 0; i < pixel_count; ++i) {
-        current_context->depth_buffer[i] = depth;
-    }
-}
+    // 从屏幕根节点开始渲染
+    // 屏幕的父坐标视为 (0,0)
+    _sgl_render_obj(act_scr, 0, 0);
 
-void sgl_clear(sgl_color_t color, float depth) {
-    sgl_clear_color(color);
-    sgl_clear_depth(depth);
-}
-
-void sgl_viewport(int x, int y, int width, int height) {
-    if (!current_context) return;
-
-    float w = (float)width / 2.0f;
-    float h = (float)height / 2.0f;
-
-    // 构建视口变换矩阵
-    // 映射 NDC [-1, 1] -> Screen [x, x+w], [y, y+h]
-    // 映射 Z [-1, 1] -> [0, 1]
-    
-    // 假设 mat4x4 结构体有 m[4][4] 成员
-    // 初始化为 0
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            current_context->viewport_matrix.m[i][j] = 0.0f;
-        }
-    }
-
-    // 对角线缩放
-    current_context->viewport_matrix.m[0][0] = w;
-    current_context->viewport_matrix.m[1][1] = h;
-    current_context->viewport_matrix.m[2][2] = 0.5f;
-    current_context->viewport_matrix.m[3][3] = 1.0f;
-
-    // 平移分量 (第4列)
-    current_context->viewport_matrix.m[0][3] = (float)x + w;
-    current_context->viewport_matrix.m[1][3] = (float)y + h;
-    current_context->viewport_matrix.m[2][3] = 0.5f;
-}
-
-sgl_color_t* sgl_get_color_buffer() { 
-  if (!current_context) return NULL; 
-  return current_context->color_buffer; 
+    sgl_hal_flush();
 }
