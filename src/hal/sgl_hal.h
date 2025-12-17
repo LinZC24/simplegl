@@ -49,4 +49,4 @@ int sgl_hal_get_width(void);
 */
 int sgl_hal_get_height(void);
 
-#endif SGL_HAL_H
+#endif

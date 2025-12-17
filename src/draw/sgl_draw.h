@@ -43,3 +43,5 @@ void sgl_draw_circle(int x, int y, int r, sgl_color_t color);
 @brief 绘制填充圆形
 */
 void sgl_draw_fill_circle(int x, int y, int r, sgl_color_t color);
+
+#endif
