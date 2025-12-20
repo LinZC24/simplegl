@@ -8,3 +8,4 @@ set(CMAKE_C_STANDARD 99)
 # 添加子目录
 add_subdirectory(src)
 add_subdirectory(screen_render_demo)
+add_subdirectory(font_render_demo)

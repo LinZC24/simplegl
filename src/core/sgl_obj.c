@@ -43,3 +43,9 @@ void sgl_obj_set_color(sgl_obj_t *obj, sgl_color_t color) {
 void sgl_obj_set_draw_cb(sgl_obj_t *obj, sgl_draw_cb_t cb) {
     if(obj) { obj->draw_cb = cb; }
 }
+
+void sgl_obj_invalidate(sgl_obj_t *obj) {
+    // 在简单实现中，我们假设 sgl_refresh() 总是重绘整个屏幕或对象树。
+    // 如果未来实现了脏矩形优化，这里需要将 obj 的坐标区域添加到脏矩形列表中。
+    (void)obj; // 避免未使用参数警告
+}

@@ -28,4 +28,6 @@ void sgl_obj_set_size(sgl_obj_t *obj, int w, int h);
 void sgl_obj_set_color(sgl_obj_t *obj, sgl_color_t color);
 void sgl_obj_set_draw_cb(sgl_obj_t *obj, sgl_draw_cb_t cb);
 
+void sgl_obj_invalidate(sgl_obj_t *obj);
+
 #endif // SGL_OBJ_H
