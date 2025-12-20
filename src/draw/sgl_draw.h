@@ -2,6 +2,7 @@
 #define SGL_DRAW_H
 
 #include "../hal/sgl_hal.h"
+#include "../font/sgl_font.h"
 
 /*
 @brief 清空屏幕
@@ -43,5 +44,15 @@ void sgl_draw_circle(int x, int y, int r, sgl_color_t color);
 @brief 绘制填充圆形
 */
 void sgl_draw_fill_circle(int x, int y, int r, sgl_color_t color);
+
+/*
+@brief 绘制字符
+*/
+void sgl_draw_char(int x, int y, char letter, const sgl_font_t *font, sgl_color_t color);
+
+/*
+@brief 绘制字符串
+*/
+void sgl_draw_string(int x, int y, const char *str, const sgl_font_t *font, sgl_color_t color);
 
 #endif

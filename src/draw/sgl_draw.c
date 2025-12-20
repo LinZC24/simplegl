@@ -1,4 +1,5 @@
 #include "sgl_draw.h"
+#include "../hal/sgl_hal.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -110,5 +111,33 @@ void sgl_draw_fill_circle(int x, int y, int r, sgl_color_t color) {
         draw_circle_line(x - dx, x + dx, y - dy, color);
         draw_circle_line(x - dy, x + dy, y + dx, color);
         draw_circle_line(x - dy, x + dy, y - dx, color);
+    }
+}
+
+void sgl_draw_char(int x, int y, char letter, const sgl_font_t *font, sgl_color_t color) {
+    sgl_glyph_dsc_t dsc;
+    if (!font->get_glyph_dsc(font, &dsc, letter)) return;
+
+    const uint8_t *bitmap = dsc.bitmap;
+    for (int row = 0; row < dsc.box_h; row++) {
+        uint8_t row_data = bitmap[row];
+        for (int col = 0; col < dsc.box_w; col++) {
+            // 假设最高位对应最左边的像素 (0x80)
+            if (row_data & (0x80 >> col)) {
+                sgl_hal_draw_pixel(x + dsc.ofs_x + col, y + dsc.ofs_y + row, color);
+            }
+        }
+    }
+}
+
+void sgl_draw_string(int x, int y, const char *str, const sgl_font_t *font, sgl_color_t color) {
+    while (*str) {
+        sgl_draw_char(x, y, *str, font, color);
+        
+        sgl_glyph_dsc_t dsc;
+        font->get_glyph_dsc(font, &dsc, *str);
+        x += dsc.adv_w;
+        
+        str++;
     }
 }
