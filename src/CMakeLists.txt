@@ -2,8 +2,9 @@
 set(SOURCES
     hal/sgl_hal.c
     draw/sgl_draw.c
-    core/sgl_core.c   # 之前缺失的
-    core/sgl_obj.c    # 之前缺失的
+    core/sgl_core.c   
+    core/sgl_obj.c    
+    font/sgl_font.c
 )
 
 # 创建静态库 simplegl
