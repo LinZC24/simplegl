@@ -5,6 +5,7 @@ set(SOURCES
     core/sgl_core.c   
     core/sgl_obj.c    
     font/sgl_font.c
+    utils/img_converter.c
 )
 
 # 创建静态库 simplegl
