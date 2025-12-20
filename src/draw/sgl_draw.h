@@ -55,4 +55,15 @@ void sgl_draw_char(int x, int y, char letter, const sgl_font_t *font, sgl_color_
 */
 void sgl_draw_string(int x, int y, const char *str, const sgl_font_t *font, sgl_color_t color);
 
+/* 图片描述符 */
+typedef struct {
+    const uint8_t *data; // 图片数据指针 (RGB565, 低字节在前)
+    uint16_t w;          // 宽度
+    uint16_t h;          // 高度
+    bool has_alpha;      // 是否包含透明通道
+} sgl_img_dsc_t;
+
+/* 绘制图片接口 */
+void sgl_draw_image(int x, int y, const sgl_img_dsc_t *img);
+
 #endif

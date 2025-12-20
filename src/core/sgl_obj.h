@@ -19,6 +19,7 @@ struct _sgl_obj_t {
     sgl_color_t color;  // 基础颜色
     
     sgl_draw_cb_t draw_cb; // 绘制回调
+    void *user_data; 
 };
 
 sgl_obj_t *sgl_obj_create(sgl_obj_t *parent);

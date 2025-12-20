@@ -141,3 +141,27 @@ void sgl_draw_string(int x, int y, const char *str, const sgl_font_t *font, sgl_
         str++;
     }
 }
+
+void sgl_draw_image(int x, int y, const sgl_img_dsc_t *img) {
+    if (!img || !img->data) return;
+
+    // 将 uint8_t* 转换为 uint16_t* 以便按像素读取 (假设系统是小端序)
+    // 注意：如果数据流是字节流且未对齐，直接强转可能在某些架构上有风险，
+    // 但在 ARM/x86 Linux 上通常没问题。更安全的做法是按字节组合。
+    
+    const uint8_t *data_u8 = img->data;
+
+    for (int row = 0; row < img->h; row++) {
+        for (int col = 0; col < img->w; col++) {
+            // 计算当前像素在数组中的索引 (每个像素2字节)
+            int index = (row * img->w + col) * 2;
+            
+            // 组合两个字节为一个 16位 颜色值 (RGB565)
+            // 假设数据存储为 Little Endian: [Low Byte] [High Byte]
+            uint16_t color = data_u8[index] | (data_u8[index + 1] << 8);
+            
+            // 绘制像素
+            sgl_hal_draw_pixel(x + col, y + row, color);
+        }
+    }
+}
