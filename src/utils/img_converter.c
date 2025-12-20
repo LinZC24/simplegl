@@ -1,7 +1,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "../draw/sgl_draw.h"
-#include "img_converter.h" // 稍后创建这个头文件
+#include "img_converter.h" 
 #include <stdlib.h>
 #include <stdio.h>
 

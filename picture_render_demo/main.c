@@ -74,12 +74,13 @@ int main(int argc, char **argv) {
     // 3. 主循环
     while(1) {
         sgl_refresh();
-        usleep(20000); // 2
+        usleep(20000);
+    }
         // 4. 清理资源
-        if (img_loaded) {
-            sgl_img_free(&my_img);
-        }
-        sgl_deinit();
-      }
+    if (img_loaded) {
+        sgl_img_free(&my_img);
+    }
+    sgl_deinit();
+      
     return 0;
 }    
