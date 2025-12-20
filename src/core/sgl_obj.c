@@ -17,7 +17,7 @@ sgl_obj_t *sgl_obj_create(sgl_obj_t *parent) {
     
     obj->x = 0; obj->y = 0;
     obj->w = 100; obj->h = 50;
-    obj->color = 0xFFFFFFFF;
+    obj->color = 0xFFFF;
     obj->draw_cb = sgl_obj_draw_rect;
 
     if (parent) {

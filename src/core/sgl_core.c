@@ -23,7 +23,7 @@ int sgl_init(void) {
     // 3. 设置屏幕默认属性
     sgl_obj_set_size(act_scr, sgl_hal_get_width(), sgl_hal_get_height());
     sgl_obj_set_pos(act_scr, 0, 0);
-    sgl_obj_set_color(act_scr, 0xFF000000); // 默认黑色背景
+    sgl_obj_set_color(act_scr, 0x0000); // 默认黑色背景
 
     return 0;
 }

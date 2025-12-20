@@ -49,4 +49,9 @@ int sgl_hal_get_width(void);
 */
 int sgl_hal_get_height(void);
 
+/* 获取输入设备状态 */
+/* x, y: 输出坐标指针 */
+/* pressed: 输出按下状态指针 (1:按下, 0:松开) */
+void sgl_get_indev(int *x, int *y, int *pressed);
+
 #endif

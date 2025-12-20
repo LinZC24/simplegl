@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     if (sgl_init() != 0) return -1;
 
     sgl_obj_t *scr = sgl_get_scr_act();
-    sgl_obj_set_color(scr, 0x2104); // 背景深灰
+    sgl_obj_set_color(scr, 0xFFFF); // 背景白色
 
     // 创建移动的矩形块
     sgl_obj_t *box = sgl_obj_create(scr);
