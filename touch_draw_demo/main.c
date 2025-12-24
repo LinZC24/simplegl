@@ -11,6 +11,7 @@
 #define SCREEN_W 800
 #define SCREEN_H 480
 #define BTN_H    80
+#define BTN_W    100
 #define CANVAS_H (SCREEN_H - BTN_H)
 
 // 清除按钮的绘制回调：绘制红色背景和白色"X"
@@ -49,7 +50,7 @@ int main() {
     // 3. 创建清除按钮对象 (占据屏幕底部)
     sgl_obj_t *btn = sgl_obj_create(scr);
     sgl_obj_set_pos(btn, 0, CANVAS_H);
-    sgl_obj_set_size(btn, SCREEN_W, BTN_H);
+    sgl_obj_set_size(btn, BTN_W, BTN_H);
     sgl_obj_set_color(btn, 0xF800); // 红色 (RGB565)
     sgl_obj_set_draw_cb(btn, btn_draw_cb);
     
